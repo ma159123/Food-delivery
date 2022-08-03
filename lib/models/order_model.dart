@@ -3,6 +3,7 @@ import 'package:food_delivery/models/address_model.dart';
 class OrderModel {
   late int id;
   late int userId;
+ String? img;
   double? orderAmount;
   String? orderStatus;
   String? paymentStatus;
@@ -32,6 +33,7 @@ class OrderModel {
   OrderModel({
     required this.id,
     required this.userId,
+    this.img,
     this.createdAt,
     this.accepted,
     this.canceled,
@@ -61,6 +63,7 @@ class OrderModel {
   OrderModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     userId = json['user_id'];
+    img= json['img'];
     orderAmount = json['order_amount'].toDouble();
     paymentStatus = json['payment_status'] ?? 'pending';
     totalTaxAmount = 10.0;
@@ -92,6 +95,7 @@ class OrderModel {
     final Map<String, dynamic> data = Map<String, dynamic>();
    data['id']=id;
      data['user_id']=userId;
+     data['img']=img;
      data['order_amount']=orderAmount;
    data['payment_status'] =paymentStatus;
     data['total_tax_amount']=totalTaxAmount ;

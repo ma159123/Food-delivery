@@ -22,9 +22,9 @@ class AccountPage extends StatelessWidget {
 
     bool isUserLoggedIn=Get.find<AuthController>().isUserLogin();
     print('looooooo%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%oooooooooged?'+isUserLoggedIn.toString());
-    // if(isUserLoggedIn){
-    //   Get.find<UserController>().getUserData();
-    // }
+    if(isUserLoggedIn){
+      Get.find<UserController>().getUserData();
+    }
     return GetBuilder<UserController>(
       builder: (userController){
         return Scaffold(

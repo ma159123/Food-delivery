@@ -12,6 +12,8 @@ class OrderController extends GetxController implements GetxService{
   late List<OrderModel> _currentOrderList;
   late List<OrderModel> _historyOrderList;
 
+   List<OrderModel>?_allOrders;
+  List<OrderModel>? get allOrders=>_allOrders;
   List<OrderModel> get currentOrderList=>_currentOrderList;
   List<OrderModel> get historyOrderList=>_historyOrderList;
   int _paymentIndex=0;
@@ -21,7 +23,7 @@ class OrderController extends GetxController implements GetxService{
 
   String _foodNote='';
   String get foodNote=>_foodNote;
-  Future<void> placeOrder(PlaceOrderModel placeOrder,Function callBack)async{
+  Future<void> placeOrder(PlaceOrderModel placeOrder,Function callBack,OrderModel orderModel)async{
     _isLoading=true;
      Response response =await orderRepo.placeOrder(placeOrder);
      if(response.statusCode==200){
@@ -36,11 +38,15 @@ class OrderController extends GetxController implements GetxService{
     _isLoading=false;
      update();
    }
+   void addToOrderList(OrderModel orderModel){
+    _allOrders ??= [];
+    _allOrders!.add(orderModel);
+    update();
+   }
 
 Future<void> getOrderList()async{
 _isLoading=true;
   Response response= await  orderRepo.getOrderList();
-
   if(response.statusCode==200){
     _historyOrderList=[];
     _currentOrderList=[];

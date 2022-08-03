@@ -87,7 +87,7 @@ String page;
                               backgroundColor: AppColors.mainColor,
                             ),
                             onTap: (){
-                              Get.to(const CartPage());
+                              Get.to( CartPage());
                             },
                           ),
                         )

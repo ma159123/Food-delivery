@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:food_delivery/data/Api/api_checker.dart';
-import 'package:food_delivery/data/controller/user_controller.dart';
 import 'package:food_delivery/data/repo/address_repo.dart';
 import 'package:food_delivery/models/address_model.dart';
 import 'package:food_delivery/models/response_model.dart';
@@ -165,8 +164,8 @@ class AddressController extends GetxController implements GetxService {
   }
 
   Future<ResponseModel> addAddress(AddressModel addressModel) async {
-    _loading = true;
-    update();
+    // _loading = true;
+    // update();
     Response response = await addressRepo.addAddress(addressModel);
     ResponseModel responseModel;
     if (response.statusCode == 200) {

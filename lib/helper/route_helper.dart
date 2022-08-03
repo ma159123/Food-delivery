@@ -103,7 +103,7 @@ class AppRoute {
     GetPage(
       name: cartPage,
       page: () {
-        return const CartPage();
+        return  CartPage();
       },
       transition: Transition.fadeIn,
     ),

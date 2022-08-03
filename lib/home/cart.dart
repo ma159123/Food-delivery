@@ -1,32 +1,55 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:food_delivery/base/common_text_button.dart';
 import 'package:food_delivery/base/no_data_page.dart';
-import 'package:food_delivery/base/show_custom_snackbar.dart';
 import 'package:food_delivery/data/controller/address_controller.dart';
 import 'package:food_delivery/data/controller/auth_controller.dart';
 import 'package:food_delivery/data/controller/cart_controller.dart';
 import 'package:food_delivery/data/controller/order_controller.dart';
 import 'package:food_delivery/data/controller/popular_product_controller.dart';
-import 'package:food_delivery/data/controller/user_controller.dart';
 import 'package:food_delivery/home/delivery_options.dart';
-import 'package:food_delivery/home/main_food_page.dart';
-import 'package:food_delivery/home/stripe_payment.dart';
-import 'package:food_delivery/models/place_order_model.dart';
+import 'package:food_delivery/models/order_model.dart';
 import 'package:food_delivery/utils/constants/app_constants.dart';
 import 'package:food_delivery/widgets/app_text_field.dart';
 import 'package:food_delivery/widgets/small_text.dart';
 import 'package:get/get.dart';
+import '../base/show_custom_snackbar.dart';
 import '../data/controller/recommended_product_controller.dart';
+import '../data/controller/user_controller.dart';
 import '../helper/route_helper.dart';
+import '../models/place_order_model.dart';
 import '../utils/colors.dart';
 import '../widgets/app_icon.dart';
 import '../widgets/big_text.dart';
 import '../widgets/dimensions.dart';
+import 'add_address_page.dart';
 import 'payment_option_button.dart';
+import 'package:http/http.dart' as http;
 
-class CartPage extends StatelessWidget {
-  const CartPage({Key? key}) : super(key: key);
+class CartPage extends StatefulWidget {
+   CartPage({Key? key}) : super(key: key);
 
+  @override
+  State<CartPage> createState() => _CartPageState();
+
+
+
+
+}
+
+class _CartPageState extends State<CartPage> {
+  static String apiBase = 'https://api.stripe.com/v1';
+  static String paymentApiUrl = '$apiBase/payment_intents';
+  static Uri paymentApiUri=Uri.parse(paymentApiUrl);
+  static String secret = 'sk_test_51LPWpBEu20JFnbILdCxViZ2d4FqE28GRcPO3u1TlfSoGEqhXKo0jA4Bfy3WLcsbvA9ouqDUZ5BWtL2PZh9dREYOF00UkXZr9Wl';
+  static Map<String, String> headers = {
+    'Authorization': 'Bearer $secret',
+    'Content-Type': 'application/x-www-form-urlencoded',
+  };
+
+  var paymentIntent;
   @override
   Widget build(BuildContext context) {
     TextEditingController _noteController=TextEditingController();
@@ -48,7 +71,7 @@ class CartPage extends StatelessWidget {
                       iconSize: Dimensions.iconSize24,
                     ),
                     onTap: () {
-                      // Get.to(page)
+                      Get.back();
                     },
                   ),
                   SizedBox(
@@ -62,7 +85,7 @@ class CartPage extends StatelessWidget {
                       iconSize: Dimensions.iconSize24,
                     ),
                     onTap: () {
-                      Get.to(const MainFoodPage());
+                      Get.toNamed(AppRoute.getInitialPage());
                     },
                   ),
                   AppIcon(
@@ -326,7 +349,8 @@ class CartPage extends StatelessWidget {
                                                     top: Dimensions.height20,
 
                                                 ),
-                                                height: Dimensions.height10 * 51,
+                                                color: Colors.white,
+                                                height: Dimensions.height10 * 60,
                                                 child: Column(
                                                   children:  [
                                                     const PaymentOptionButton(
@@ -413,39 +437,58 @@ class CartPage extends StatelessWidget {
                                   '\$ ' + cartController.totalAmount.toString()),
                             ),
                             GestureDetector(
-                              onTap: () {
+                              onTap: ()async {
                                 //   popularProduct.addItem(product);
                                 if (Get.find<AuthController>()
                                     .isUserLogin()) {
                                   if (Get.find<AddressController>()
                                       .addressList
                                       .isEmpty) {
-                                    Get.toNamed(AppRoute.getAddressPage());
+                                    Get.toNamed(AppRoute.getAddressPage(),
+                                        arguments: AddAddressPage(fromPickAddressPage: false)
+                                    );
                                   } else {
-                                    payNow(Get.find<CartController>().totalAmount.toString());
-                                    // var address =
-                                    // Get.find<AddressController>()
-                                    //     .getUserAddress();
-                                    // var cart = Get.find<CartController>()
-                                    //     .getCartItems;
-                                    // var user =
-                                    //     Get.find<UserController>().userModel;
-                                    // PlaceOrderModel placeOrderModel =
-                                    // PlaceOrderModel(
-                                    //   cart: cart,
-                                    //   orderAmount: 10.0,
-                                    //   orderNote: orderController.foodNote,
-                                    //   address: address.address,
-                                    //   latitude: address.latitude,
-                                    //   longitude: address.longitude,
-                                    //   contactPersonName: user.name,
-                                    //   contactPersonNumber: user.phone,
-                                    //   scheduledAt: '',
-                                    //   distance: 10.0, orderType: orderController.orderType , paymentMethod: orderController.paymentIndex==0?'cash_on_delivery':'digital_payment',
-                                    // );
-                                    // Get.find<OrderController>().placeOrder(
-                                    //     placeOrderModel, _callBack);
-                                    // Get.toNamed(AppRoute.getInitialPage());
+                                  //  Navigator.push(context, MaterialPageRoute(builder: (context)=>StripePaymentScreen()));
+
+
+                                    var address =
+                                    Get.find<AddressController>()
+                                        .getUserAddress();
+                                    var cart = Get.find<CartController>()
+                                        .getCartItems;
+                                    var user =
+                                        Get.find<UserController>().userModel;
+                                    PlaceOrderModel placeOrderModel =
+                                    PlaceOrderModel(
+                                      cart: cart,
+                                      orderAmount: 10.0,
+                                      orderNote: orderController.foodNote,
+                                      address: address!.address!,
+                                      latitude: address.latitude!,
+                                      longitude: address.longitude!,
+                                      contactPersonName: user!.name,
+                                      contactPersonNumber: user.phone,
+                                      scheduledAt: '',
+                                      distance: 10.0, orderType: orderController.orderType , paymentMethod: orderController.paymentIndex==0?'cash_on_delivery':'digital_payment',
+                                    );
+                                    for(int i=0;i<cart.length;i++){
+                                      OrderModel orderModel=OrderModel(
+                                        id: cart[i].id!,
+                                        userId: user.id,
+                                      );
+                                      Get.find<OrderController>().addToOrderList(orderModel);
+                                    }
+                                   // Get.find<OrderController>().addToOrderList(orderModel);
+                                    print('alllllllllllllllllll orders: ');
+                                    print( Get.find<OrderController>().allOrders![0]);
+                                    if(orderController.paymentIndex==1){
+                                      makePayment(currency: 'USD', amount: cartController.totalAmount.toString());
+                                    }else{
+                                      showCustomSnackBar('order placed successfully',isError: false,title: 'Order');
+                                      Get.find<CartController>().addToHistoryList();
+                                      Get.toNamed(AppRoute.getInitialPage());
+                                    }
+
                                   }
                                 } else {
                                   Get.toNamed(AppRoute.getLoginPage());
@@ -472,31 +515,128 @@ class CartPage extends StatelessWidget {
   }
 
   // void _callBack(bool isSuccess, String message, String orderId) {
-  //   if (isSuccess) {
-  //     Get.find<CartController>().clear();
-  //     Get.find<CartController>().removeCartSharedPreference();
-  //     Get.find<CartController>().addToHistoryList();
-  //     if(Get.find<OrderController>().paymentIndex==0){
-  //       Get.offNamed(AppRoute.getOrderSuccessPage(orderId, 'success'));
-  //     }else{
-  //       Get.toNamed(AppRoute.getPaymentPage(
-  //           orderId, Get.find<UserController>().userModel.id));
+  //   void payNow(String amount) async {
+  //     var response = await payNowHandler(amount: amount, currency: 'USD');
+  //     if (response.success) {
+  //       showCustomSnackBar(response.message);
+  //       Get.find<CartController>().addToHistoryList();
+  //     } else {
+  //       showCustomSnackBar(response.message);
   //     }
-  //
-  //   } else {
-  //     print('callBack errrrrrrrror');
-  //     showCustomSnackBar(message);
+  //     print('response message :${response.message}');
   //   }
   // }
+  //
 
-  void payNow(String amount)async{
-    var response=await StripeServices.payNowHandler(amount: amount, currency: 'USD');
-    if(response.success){
-      showCustomSnackBar(response.message);
-      Get.find<CartController>().addToHistoryList();
-    }else{
-      showCustomSnackBar(response.message);
+
+  Future <void> makePayment({required String amount,required String currency})async{
+    try{
+      paymentIntent=await createPaymentIntent(amount, currency);
+      if(paymentIntent['client_secret']!=null&&paymentIntent['client_secret']!=''){
+        String _intent=paymentIntent!['client_secret'];
+        final billingDetails =  BillingDetails(
+          name: 'Flutter Stripe',
+          email: 'email@stripe.com',
+          phone: '+48888000888',
+          address: Address(
+            city: 'Houston',
+            country: 'US',
+            line1: '1459  Circle Drive',
+            line2: '',
+            state: 'Texas',
+            postalCode: '77063',
+          ),
+        );
+        await Stripe.instance.initPaymentSheet(
+            paymentSheetParameters: SetupPaymentSheetParameters(
+
+              paymentIntentClientSecret:_intent,
+              merchantDisplayName: "Test",
+              customerEphemeralKeySecret: paymentIntent['ephemeralKey'],
+              customerId: paymentIntent['customer'],
+              applePay: const PaymentSheetApplePay(
+                merchantCountryCode: 'IN',
+
+              ),
+              googlePay: const PaymentSheetGooglePay(
+                merchantCountryCode: 'IN',
+                testEnv: false,
+              ),
+              // style: ThemeMode.dark,
+              appearance:  PaymentSheetAppearance(
+                primaryButton: PaymentSheetPrimaryButtonAppearance(
+                  shapes: PaymentSheetPrimaryButtonShape(blurRadius: 8),
+                  colors: PaymentSheetPrimaryButtonTheme(
+                    light: PaymentSheetPrimaryButtonThemeColors(
+                      background: AppColors.mainColor,
+                      text: Colors.white,
+                      border: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              billingDetails: billingDetails,
+            )
+
+        );
+      }else{
+        print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%errror');
+      }
+
+
+     displayPaymentSheet();
+    }catch(e){
+      print('#######################################'+e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+      rethrow;
     }
-    print('response message :${response.message}');
+  }
+
+  static Future<Map<String,dynamic>> createPaymentIntent(String amount,String currency)async{
+    try{
+      Map<String ,dynamic> body={
+        'amount':calculateAmount(amount),
+        'currency':currency,
+        'payment_method_types[]':'card',
+      };
+      var response =await http.post(paymentApiUri,
+          headers: headers,body: body);
+      return jsonDecode(response.body);
+    }catch(error){
+      print('error happened');
+      rethrow;
+    }
+  }
+  displayPaymentSheet()async{
+    try{
+    await  Stripe.instance.presentPaymentSheet(
+          parameters: PresentPaymentSheetParameters(clientSecret:paymentIntent!['client_secret'],
+            confirmPayment: true,
+          )
+      );
+
+      setState((){
+        paymentIntent=null;
+      });
+
+      showCustomSnackBar('Paid successfully',isError: false,title: 'Payment');
+      Get.find<CartController>().addToHistoryList();
+    Get.toNamed(AppRoute.getInitialPage());
+
+    }on StripeException catch(e){
+      print(e.toString());
+
+      showCustomSnackBar('Paid cancelled',isError: true,title: 'Payment');
+
+      // showDialog(context: context, builder: (_)=>const AlertDialog(
+      //   content: Text('Cancelled'),
+      // ));
+    }
+  }
+  static calculateAmount(String amount){
+    final price=int.parse(amount)*100;
+    return price.toString();
   }
 }

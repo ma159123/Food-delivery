@@ -287,9 +287,10 @@ class _AddAddressPageState extends State<AddAddressPage> {
                 );
                 addressController.addAddress(addressModel).then((value) {
                   if (value.isSuccess) {
-                    Get.toNamed(AppRoute.getInitialPage());
                     Get.snackbar('Address', 'Added successfully',
                         backgroundColor: AppColors.mainColor);
+                    Get.toNamed(AppRoute.getInitialPage());
+
                   } else {
                     Get.snackbar('Address', 'Addition failed',
                         backgroundColor: Colors.redAccent);

@@ -208,9 +208,9 @@ class SignInPage extends StatelessWidget {
                                ResponseModel responseModel=await authController.facebookLogin();
                                if(responseModel.isSuccess==true){
                                  Get.toNamed(AppRoute.getInitialPage());
-                                 showCustomSnackBar('Login success',isError: false,title: 'Login');
+                                 //showCustomSnackBar('Login success',isError: false,title: 'Login');
                                }else{
-                                 showCustomSnackBar('Login failed',isError: true,title: 'Login');
+                                // showCustomSnackBar('Login failed',isError: true,title: 'Login');
                                }
 
                                 }
