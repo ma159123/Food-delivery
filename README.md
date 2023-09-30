@@ -1,16 +1,25 @@
 # food_delivery
 
-A new Flutter project.
+# Description:
 
-## Getting Started
+This application is designed to help users order and deliver food from their favorite restaurants. It has a simple design and displays various foods in a user-friendly way.
 
-This project is a starting point for a Flutter application.
+# Features:
 
-A few resources to get you started if this is your first Flutter project:
+Order food from your favorite restaurants
+View menus and food items
+Filter food items by category, price, and rating
+Add food items to your cart
+Review your cart and place your order
+Track your order status
+Receive push notifications for order updates
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+# Technologies:
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Flutter
+GetX state management
+PHP API
+Google Maps API
+Facebook auth
+stripe payment
+
